@@ -18,7 +18,7 @@ class AggregateByDateTime():
         return agg_by_date(data, datetime, values, intervals=intervals, agg=aggregation)
 
 class AggregateByDateTimeCategory():
-    def fit(self, data):
+    def fit(self, intype, data):
         pass
 
     def transform(self, data=None, values=[], groupby=[], datetime=None, intervals=None, 
@@ -27,7 +27,7 @@ class AggregateByDateTimeCategory():
                             agg=aggregation)
 
 class AggregateByNumericRange():
-    def fit(self, data):
+    def fit(self, intype, data):
         pass
 
     def transform(self, data=None, values=[]):

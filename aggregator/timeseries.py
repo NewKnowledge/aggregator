@@ -68,7 +68,7 @@ def agg_by_date(df, datetime_header, number_headers, intervals=None, agg='mean')
         grouped = series.groupby(pd.TimeGrouper(freq=interval_to_pd[interval]))
         df_grouped_by_date = getattr(grouped,agg)().reset_index()
 
-        x_values[interval] = df_grouped_by_date['index'].dt.strftime('%Y-%m-%d %H:%M:%S').values
+        x_values[interval] = df_grouped_by_date[datetime_header].dt.strftime('%Y-%m-%d %H:%M:%S').values
         y_values[interval] = {}
         for number_header in number_headers:
             y_values[interval][number_header] = df_grouped_by_date[number_header].values
@@ -84,7 +84,7 @@ def agg_by_date(df, datetime_header, number_headers, intervals=None, agg='mean')
 
 
 def agg_by_category_by_date(df, datetime_header, number_headers, category_headers, 
-									intervals=None, agg='mean'):
+                                    intervals=None, agg='mean'):
     
 
     all_column_headers = category_headers + number_headers
@@ -111,16 +111,17 @@ def agg_by_category_by_date(df, datetime_header, number_headers, category_header
         grouped = indexed[all_column_headers].groupby([grouper] + category_headers)
         df_grouped_by_date = getattr(grouped,agg)().reset_index()
 
-        x_values[interval] = df_grouped_by_date['level_0'].dt.strftime('%Y-%m-%d %H:%M:%S').values
+        x_values[interval] = df_grouped_by_date[datetime_header].dt.strftime('%Y-%m-%d %H:%M:%S').values
 
         for number_header in number_headers:
-        	y_values[interval][number_header] = df_grouped_by_date[number_header].values
+            if interval not in y_values:
+                y_values[interval] = {}
+            y_values[interval][number_header] = df_grouped_by_date[number_header].values
 
         for category_header in category_headers:
-        	z_values[interval][category_header] = df_grouped_by_date[category_header].values
-
-        if interval not in interval_columns:
-            interval_columns[interval] = []
+            if interval not in z_values:
+                z_values[interval] = {}
+            z_values[interval][category_header] = df_grouped_by_date[category_header].values
 
     output = {
         'datetimes': x_values,

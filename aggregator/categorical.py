@@ -5,8 +5,6 @@ def agg_by_categories(df, category_headers, number_headers, agg='mean'):
 
     all_headers = number_headers + category_headers
 
-    getattr(grouped,agg)().reset_index()
-
     temp_grouped = df[all_headers].groupby(category_headers)
     grouped = getattr(temp_grouped,agg)().reset_index()
 

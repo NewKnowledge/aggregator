@@ -14,17 +14,16 @@ def range_groups(df, number_headers, bins=None):
         highest_max_header = None
         highest_max_value = None
 
-        for vector in numbers:
-            column_header = vector.column_header
-            min_val = df_desc.loc[df_desc['index'] == 'min'][column_header].values[0]
-            max_val = df_desc.loc[df_desc['index'] == 'max'][column_header].values[0]
+        for number_header in number_headers:
+            min_val = df_desc.loc[df_desc['index'] == 'min'][number_header].values[0]
+            max_val = df_desc.loc[df_desc['index'] == 'max'][number_header].values[0]
 
             if not lowest_min_value or min_val < lowest_min_value:
-                lowest_min_header = column_header
+                lowest_min_header = number_header
                 lowest_min_value = min_val
 
             if not highest_max_value or max_val > highest_max_value:
-                highest_max_header = column_header
+                highest_max_header = number_header
                 highest_max_value = max_val
 
         high_low = np.concatenate([df_nums[lowest_min_header].values,df_nums[highest_max_header].values])
@@ -36,9 +35,8 @@ def range_groups(df, number_headers, bins=None):
 
     ys = {}
     x_values = None
-    for vector in numbers:
-        column_header = vector.column_header
-        count,division = np.histogram(df_nums[column_header].values,bins=bins)
+    for number_header in number_headers:
+        count,division = np.histogram(df_nums[number_header].values,bins=bins)
 
         if not x_values:
             x_values = []
@@ -49,7 +47,7 @@ def range_groups(df, number_headers, bins=None):
                 x_values.append('{0:.2f}'.format(d) + u' to ' + '{0:.2f}'.format(division[i+1]))
 
         y_values = list(count)
-        ys[column_header] = y_values
+        ys[number_header] = y_values
 
     
     return {
