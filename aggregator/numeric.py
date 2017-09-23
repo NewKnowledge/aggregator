@@ -49,8 +49,9 @@ def range_groups(df, number_headers, bins=None):
         y_values = list(count)
         ys[number_header] = y_values
 
+    output = np.array([
+        x_values,
+        y_values
+    ],dtype='O')
     
-    return {
-        'category_labels': x_values,
-        'aggregated_values': ys
-    }
+    return output

@@ -42,7 +42,7 @@ def best_intervals(start_date, end_date):
     return intervals
 
 
-def agg_by_date(df, datetime_header, number_headers, intervals=None, agg='mean'):
+def agg_by_date(df, datetime_header, number_headers, interval=None, agg='mean'):
     if agg not in ['mean', 'sum']:
         return None
 
@@ -54,37 +54,34 @@ def agg_by_date(df, datetime_header, number_headers, intervals=None, agg='mean')
 
     last = df[datetime_header].max()
     first = df[datetime_header].min()
-
-    x_values = {}
-    y_values = {}
     
-    if intervals:
-        has_intervals = True
+    if interval:
+        has_interval = True
     else:
-        has_intervals = False
-        intervals = best_intervals(first,last)
+        has_interval = False
+        interval = best_intervals(first,last)
+        if len(interval) > 0:
+            interval = interval[0]
 
-    for interval in intervals:
-        grouped = series.groupby(pd.TimeGrouper(freq=interval_to_pd[interval]))
-        df_grouped_by_date = getattr(grouped,agg)().reset_index()
+    grouped = series.groupby(pd.TimeGrouper(freq=interval_to_pd[interval]))
+    df_grouped_by_date = getattr(grouped,agg)().reset_index()
 
-        x_values[interval] = df_grouped_by_date[datetime_header].dt.strftime('%Y-%m-%d %H:%M:%S').values
-        y_values[interval] = {}
-        for number_header in number_headers:
-            y_values[interval][number_header] = df_grouped_by_date[number_header].values
-        
-    output = {
-        'datetimes': x_values,
-        'aggregated_values': y_values,
-        'intervals': intervals
-    }
+    x_values = df_grouped_by_date[datetime_header].dt.strftime('%Y-%m-%d %H:%M:%S').values
+    y_values = []
+    for number_header in number_headers:
+        y_values.append(df_grouped_by_date[number_header].values)
+
+    output = np.array([
+        x_values,
+        y_values,
+    ],dtype='O')
     
     # output results
     return output
 
 
 def agg_by_category_by_date(df, datetime_header, number_headers, category_headers, 
-                                    intervals=None, agg='mean'):
+                                    interval=None, agg='mean'):
     
 
     all_column_headers = category_headers + number_headers
@@ -93,42 +90,36 @@ def agg_by_category_by_date(df, datetime_header, number_headers, category_header
 
     indexed = df.set_index(pd.DatetimeIndex(df[datetime_header]))
     
-    x_values = {}
-    y_values = {}
-    z_values = {}
-    
     last = df[datetime_header].max()
     first = df[datetime_header].min()
 
-    if intervals:
-        has_intervals = True
+    if interval:
+        has_interval = True
     else:
-        has_intervals = False
-        intervals = best_intervals(first,last)
+        has_interval = False
+        interval = best_intervals(first,last)
+        if len(interval) > 0:
+            interval = interval[0]
 
-    for interval in intervals:
-        grouper = pd.TimeGrouper(freq=interval_to_pd[interval])
-        grouped = indexed[all_column_headers].groupby([grouper] + category_headers)
-        df_grouped_by_date = getattr(grouped,agg)().reset_index()
+    grouper = pd.TimeGrouper(freq=interval_to_pd[interval])
+    grouped = indexed[all_column_headers].groupby([grouper] + category_headers)
+    df_grouped_by_date = getattr(grouped,agg)().reset_index()
 
-        x_values[interval] = df_grouped_by_date[datetime_header].dt.strftime('%Y-%m-%d %H:%M:%S').values
+    x_values = df_grouped_by_date[datetime_header].dt.strftime('%Y-%m-%d %H:%M:%S').values
 
-        for number_header in number_headers:
-            if interval not in y_values:
-                y_values[interval] = {}
-            y_values[interval][number_header] = df_grouped_by_date[number_header].values
+    y_values = []
+    z_values = []
+    for number_header in number_headers:
+        y_values.append(df_grouped_by_date[number_header].values)
 
-        for category_header in category_headers:
-            if interval not in z_values:
-                z_values[interval] = {}
-            z_values[interval][category_header] = df_grouped_by_date[category_header].values
+    for category_header in category_headers:
+        z_values.append(df_grouped_by_date[category_header].values)
 
-    output = {
-        'datetimes': x_values,
-        'aggregated_values': y_values,
-        'category_labels': z_values,
-        'intervals': intervals
-    }
+    output = np.array([
+        x_values,
+        y_values,
+        z_values
+    ],dtype='O')
     
     # output results
     return output

@@ -17,10 +17,10 @@ def agg_by_categories(df, category_headers, number_headers, agg='mean'):
     for number_header in number_headers:
         numbers[number_header] = grouped[number_header].values
 
-    output = {
-        'aggregated_values': numbers,
-        'category_labels': categories
-    }
+    output = np.array([
+        categories,
+        numbers
+    ],dtype='O')
     
     # output results
     return output
